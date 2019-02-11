@@ -1,0 +1,32 @@
+// Theme of Crisp Blog
+// Copyright(c) David Zhang, 2017
+
+.archive-main {
+  a {
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .archive-item {
+    line-height: 1.8rem;
+    margin-top: .6rem;
+    overflow: auto;
+
+    .archive-date {
+      color: $grey-5;
+      font-size: .8rem;
+      margin: 0;
+    }
+  }
+}
+
+.archive-more {
+  color: $grey-5;
+
+  a {
+    color: $grey-5;
+  }
+}

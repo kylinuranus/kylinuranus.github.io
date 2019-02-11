@@ -1,0 +1,28 @@
+<head>
+  <meta charset="UTF-8" >
+  <title>{{ site.title }}</title>
+  <link rel="icon" href="{{ site.baseurl }}/photo/icon.JPG" type="image/x-icon">
+
+  <meta name="description" content="{{ site.description }}"/>
+  <link rel="canonical" href="{{ site.url }}{{ page.permalink }}">
+  <link rel="alternate" href="{{ site.alt_url }}{{ page.permalink }}">
+  <link rel="alternate" href="{{ site.url }}/feed.xml" type="application/rss+xml" title="RSS">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans|Fira+Mono" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="{{ site.baseurl }}/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="{{ site.baseurl }}/css/cayman.css">
+
+  {% if page.font_awesome != false %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/css/font.css">
+  {% endif %}
+  {% if page.syntax_highlight != false %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/css/nord.css">
+  {% endif %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/css/style.css">
+
+  <script src="https://use.typekit.net/syr2mmc.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+</head>

@@ -1,1 +1,20 @@
-theme: jekyll-theme-cayman
+# Setup
+title:        张起灵 kylin
+tagline:      我是一个变态
+baseurl:      ""
+paginate:     1
+locale:       "en"
+
+# About/contact
+author:
+  name:       张起灵
+  url:
+
+# Gems
+gems:
+  - jekyll-paginate
+
+#Others
+markdown: kramdown
+
+timezone: Asia/Shanghai
