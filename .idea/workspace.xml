@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3dc474d7-f5eb-4ad1-be51-5755a0dc54cb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/_posts/2019-01-08-RunTime关于消息转发.md" beforeDir="false" />
-    </list>
+    <list default="true" id="3dc474d7-f5eb-4ad1-be51-5755a0dc54cb" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -14,6 +12,7 @@
     <session id="-614992747">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
+          <entry key="project.closed" value="1" />
           <entry key="project.open.time.6" value="1" />
           <entry key="project.opened" value="1" />
         </counts>
@@ -84,9 +83,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="308" />
-    <option name="y" value="42" />
+    <option name="y" value="43" />
     <option name="width" value="1513" />
-    <option name="height" value="962" />
+    <option name="height" value="961" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -129,7 +128,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550109894455" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550110970825" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.jscs" value="project" />
@@ -163,15 +162,15 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1550108030225</updated>
-      <workItem from="1550108034279" duration="1352000" />
+      <workItem from="1550108034279" duration="1845000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1352000" />
+    <option name="totallyTimeSpent" value="1845000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="458" y="124" width="1513" height="962" extended-state="0" />
+    <frame x="308" y="43" width="1513" height="961" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Image Layers" />
