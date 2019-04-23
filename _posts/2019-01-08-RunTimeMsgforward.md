@@ -3,7 +3,7 @@ layout: post
 title:  "Runtime关于消息转发"
 date:   2019-01-08 
 tag: iOS
-permalink: /page/RunTimeMsgforward.html
+permalink: /page/RuntimeMsgforward.html
 type: legacy
 
 ---
