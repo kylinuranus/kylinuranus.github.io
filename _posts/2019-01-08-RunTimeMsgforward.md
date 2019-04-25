@@ -113,11 +113,6 @@ class_addMethod 动态的给一个sel增加一个imp(函数实现方法)
 2. (id)forwardingTargetForSelector:(SEL)aSelector
 
 ```
-#import "dog.h"
-#import "cat.h"
-#import <objc/message.h>
-
-@implementation dog
 
 - (id)init
 {
@@ -139,14 +134,9 @@ class_addMethod 动态的给一个sel增加一个imp(函数实现方法)
     return [super forwardingTargetForSelector:aSelector];
 }
 
-@end
 ```
 
 ```
-#import "cat.h"
-
-@implementation cat
-
 - (id)init
 {
     if (self = [super init]) {
@@ -159,7 +149,7 @@ class_addMethod 动态的给一个sel增加一个imp(函数实现方法)
     NSLog(@"猫在吃");
 }
 
-@end
+
 
 ```
 
@@ -349,12 +339,10 @@ class_addMethod 动态的给一个sel增加一个imp(函数实现方法)
 
 
 ```
-#import <UIKit/UIKit.h>
-@interface ViewController : UIViewController
 - (void)oriRun:(NSString *)animal;
 - (void)oriForwardInvocation:(NSInvocation *)anInvocation;
 - (void)eat;
-@end
+
 ```
 
 
