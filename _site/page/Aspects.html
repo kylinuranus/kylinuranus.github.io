@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" >
+  <title>张起灵 kylin</title>
+  <link rel="icon" href="/photo/icon.JPG" type="image/x-icon">
+
+  <meta name="description" content=""/>
+  <link rel="canonical" href="http://localhost:4000/page/Aspects.html">
+  <link rel="alternate" href="/page/Aspects.html">
+  <link rel="alternate" href="http://localhost:4000/feed.xml" type="application/rss+xml" title="RSS">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans|Fira+Mono" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+
+  
+  <link rel="stylesheet" href="/css/font.css">
+  
+  
+  <link rel="stylesheet" href="/css/nord.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="https://use.typekit.net/syr2mmc.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+<div class="wrapper blog-wrapper content-wrapper">
+    <div class="article">
+        <div class="article-menu">
+            <div class="article-home">
+                <a href="/"></a>
+            </div>
+            <div class="article-back">
+                <a href="/"><< Back</a>
+            </div>
+        </div>
+        <div class="article-head">
+            <div class="article-title">
+                Aspects源码解析
+            </div>
+            <div class="article-date">
+                <time datetime="2018-09-26 00:00:00 +0800">September 26, 2018</time>
+            </div>
+        </div>
+        <div class="article-main">
+            <p>Aspects 是一个 AOP 编程框架,大致原理是利用OC的Runtime消息转发机制,可用于埋点,简易热更新,Swizzling等</p>
+
+<h3 id="基本用法">基本用法</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    [ViewController aspect_hookSelector:@selector(viewWillAppear:) withOptions:AspectPositionBefore usingBlock:^(id&lt;AspectInfo&gt; aspectInfo,BOOL animal){
+        NSLog(@"befor___ViewWillAppear:");
+        
+    } error:NULL];
+
+</code></pre></div></div>
+
+<h3 id="基本流程">基本流程</h3>
+
+<p>首先判断该selector是否能被hook,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  dispatch_once(&amp;pred, ^{
+        disallowedSelectorList = [NSSet setWithObjects:@"retain", @"release", @"autorelease", @"forwardInvocation:", nil];
+    });
+    
+</code></pre></div></div>
+<p>不允许以上这些方法hook</p>
+
+<p>不允许子类父类hook,防止死循环</p>
+
+<hr />
+<p>将selector, 时机,和 block 用一个对象存起来</p>
+
+<hr />
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  static void aspect_prepareClassAndHookSelector(NSObject *self, SEL selector, NSError **error) {
+    NSCParameterAssert(selector);
+    Class klass = aspect_hookClass(self, error);
+    Method targetMethod = class_getInstanceMethod(klass, selector);
+    IMP targetMethodIMP = method_getImplementation(targetMethod);
+    if (!aspect_isMsgForwardIMP(targetMethodIMP)) {
+        // Make a method alias for the existing method implementation, it not already copied.
+        const char *typeEncoding = method_getTypeEncoding(targetMethod);
+        SEL aliasSelector = aspect_aliasForSelector(selector);
+        if (![klass instancesRespondToSelector:aliasSelector]) {
+            __unused BOOL addedAlias = class_addMethod(klass, aliasSelector, method_getImplementation(targetMethod), typeEncoding);
+            NSCAssert(addedAlias, @"Original implementation for %@ is already copied to %@ on %@", NSStringFromSelector(selector), NSStringFromSelector(aliasSelector), klass);
+        }
+
+        // We use forwardInvocation to hook in.
+        class_replaceMethod(klass, selector, aspect_getMsgForwardIMP(self, selector), typeEncoding);
+        AspectLog(@"Aspects: Installed hook for -[%@ %@].", klass, NSStringFromSelector(selector));
+    }
+}
+
+</code></pre></div></div>
+<p>动态增加一个别名方法,指向hook方法的实现</p>
+
+<p>替换原来selector方法的imp实现，指向消息转发</p>
+
+<hr />
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> static Class aspect_hookClass(NSObject *self, NSError **error) {
+    NSCParameterAssert(self);
+	Class statedClass = self.class;
+	Class baseClass = object_getClass(self);
+	NSString *className = NSStringFromClass(baseClass);
+
+    // Already subclassed
+	if ([className hasSuffix:AspectsSubclassSuffix]) {
+		return baseClass;
+
+        // We swizzle a class object, not a single object.
+	}else if (class_isMetaClass(baseClass)) {
+        return aspect_swizzleClassInPlace((Class)self);
+        // Probably a KVO'ed class. Swizzle in place. Also swizzle meta classes in place.
+    }else if (statedClass != baseClass) {
+        return aspect_swizzleClassInPlace(baseClass);
+    }
+
+    // Default case. Create dynamic subclass.
+	const char *subclassName = [className stringByAppendingString:AspectsSubclassSuffix].UTF8String;
+	Class subclass = objc_getClass(subclassName);
+
+	if (subclass == nil) {
+		subclass = objc_allocateClassPair(baseClass, subclassName, 0);
+		if (subclass == nil) {
+            NSString *errrorDesc = [NSString stringWithFormat:@"objc_allocateClassPair failed to allocate class %s.", subclassName];
+            AspectError(AspectErrorFailedToAllocateClassPair, errrorDesc);
+            return nil;
+        }
+
+		aspect_swizzleForwardInvocation(subclass);
+		aspect_hookedGetClass(subclass, statedClass);
+		aspect_hookedGetClass(object_getClass(subclass), statedClass);
+		objc_registerClassPair(subclass);
+	}
+
+	object_setClass(self, subclass);
+	return subclass;
+}
+
+</code></pre></div></div>
+
+<p>动态化增加一个子类，并且swizzle子类的消息转发方法forwardInvocation,动态增加了一个别名的forwardInvocation</p>
+
+<hr />
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> static void __ASPECTS_ARE_BEING_CALLED__(__unsafe_unretained NSObject *self, SEL selector, NSInvocation *invocation) {
+    NSCParameterAssert(self);
+    NSCParameterAssert(invocation);
+    SEL originalSelector = invocation.selector;
+	SEL aliasSelector = aspect_aliasForSelector(invocation.selector);
+    invocation.selector = aliasSelector;
+    AspectsContainer *objectContainer = objc_getAssociatedObject(self, aliasSelector);
+    AspectsContainer *classContainer = aspect_getContainerForClass(object_getClass(self), aliasSelector);
+    AspectInfo *info = [[AspectInfo alloc] initWithInstance:self invocation:invocation];
+    NSArray *aspectsToRemove = nil;
+
+    // Before hooks.
+    aspect_invoke(classContainer.beforeAspects, info);
+    aspect_invoke(objectContainer.beforeAspects, info);
+
+    // Instead hooks.
+    BOOL respondsToAlias = YES;
+    if (objectContainer.insteadAspects.count || classContainer.insteadAspects.count) {
+        aspect_invoke(classContainer.insteadAspects, info);
+        aspect_invoke(objectContainer.insteadAspects, info);
+    }else {
+        Class klass = object_getClass(invocation.target);
+        do {
+            if ((respondsToAlias = [klass instancesRespondToSelector:aliasSelector])) {
+                [invocation invoke];
+                break;
+            }
+        }while (!respondsToAlias &amp;&amp; (klass = class_getSuperclass(klass)));
+    }
+
+    // After hooks.
+    aspect_invoke(classContainer.afterAspects, info);
+    aspect_invoke(objectContainer.afterAspects, info);
+
+    // If no hooks are installed, call original implementation (usually to throw an exception)
+    if (!respondsToAlias) {
+        invocation.selector = originalSelector;
+        SEL originalForwardInvocationSEL = NSSelectorFromString(AspectsForwardInvocationSelectorName);
+        if ([self respondsToSelector:originalForwardInvocationSEL]) {
+            ((void( *)(id, SEL, NSInvocation *))objc_msgSend)(self, originalForwardInvocationSEL, invocation);
+        }else {
+            [self doesNotRecognizeSelector:invocation.selector];
+        }
+    }
+
+    // Remove any hooks that are queued for deregistration.
+    [aspectsToRemove makeObjectsPerformSelector:@selector(remove)];
+}
+
+</code></pre></div></div>
+
+<p>以上是核心方法,通过不同时机处理代码并且将消息转发出去</p>
+
+<p>总结:当hook完一个对象的方法以后，基本流程会变成这样</p>
+
+<p><img src="/photo/2018_aspects1.png" alt="photo" /></p>
+
+<p><img src="/photo/2018_aspects2.jpg" alt="photo" /></p>
+
+<h3 id="其中的一些小tips">其中的一些小tips</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>static void aspect_performLocked(dispatch_block_t block) {
+    static OSSpinLock aspect_lock = OS_SPINLOCK_INIT;
+    OSSpinLockLock(&amp;aspect_lock);
+    block();
+    OSSpinLockUnlock(&amp;aspect_lock);
+}
+
+</code></pre></div></div>
+<p>加了一个自旋锁,保证加 Hook 的代码是线程安全的</p>
+
+<hr />
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> object_setClass(self, subclass)
+</code></pre></div></div>
+
+<p>动态生成一个该类的子类,以下为引用bang神的话
+==将当前对象 isa 指针指向了 subclass ,同时修改了 subclass 以及其 subclass metaclass 的 class 方法,使他返回当前对象的 class。,这个地方特别绕，它的原理有点类似 kvo 的实现，它想要实现的效果就是，将当前对象变成一个 subclass 的实例，同时对于外部使用者而言，又能把它继续当成原对象在使用，而且所有的 swizzling 操作都发生在子类，这样做的好处是你不需要去更改对象本身的类，也就是，当你在 remove aspects 的时候，如果发现当前对象的 aspect 都被移除了，那么，你可以将 isa 指针重新指回对象本身的类，从而消除了该对象的 swizzling ,同时也不会影响到其他该类的不同对象)==</p>
+
+<hr />
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  
+  - (BOOL)invokeWithInfo:(id&lt;AspectInfo&gt;)info {
+    NSInvocation *blockInvocation = [NSInvocation invocationWithMethodSignature:self.blockSignature];
+    NSInvocation *originalInvocation = info.originalInvocation;
+    NSUInteger numberOfArguments = self.blockSignature.numberOfArguments;
+
+    // Be extra paranoid. We already check that on hook registration.
+    if (numberOfArguments &gt; originalInvocation.methodSignature.numberOfArguments) {
+        AspectLogError(@"Block has too many arguments. Not calling %@", info);
+        return NO;
+    }
+
+    // The `self` of the block will be the AspectInfo. Optional.
+    if (numberOfArguments &gt; 1) {
+        [blockInvocation setArgument:&amp;info atIndex:1];
+    }
+    
+	void *argBuf = NULL;
+    for (NSUInteger idx = 2; idx &lt; numberOfArguments; idx++) {
+        const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];
+		NSUInteger argSize;
+		NSGetSizeAndAlignment(type, &amp;argSize, NULL);
+        
+		if (!(argBuf = reallocf(argBuf, argSize))) {
+            AspectLogError(@"Failed to allocate memory for block invocation.");
+			return NO;
+		}
+        
+		[originalInvocation getArgument:argBuf atIndex:idx];
+		[blockInvocation setArgument:argBuf atIndex:idx];
+    }
+    
+    [blockInvocation invokeWithTarget:self.block];
+    
+    if (argBuf != NULL) {
+        free(argBuf);
+    }
+    return YES;
+}
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  typedef struct _AspectBlock {
+	__unused Class isa;
+	AspectBlockFlags flags;
+	__unused int reserved;
+	void (__unused *invoke)(struct _AspectBlock *block, ...);
+	struct {
+		unsigned long int reserved;
+		unsigned long int size;
+		// requires AspectBlockFlagsHasCopyDisposeHelpers
+		void (*copy)(void *dst, const void *src);
+		void (*dispose)(const void *);
+		// requires AspectBlockFlagsHasSignature
+		const char *signature;
+		const char *layout;
+	} *descriptor;
+	// imported variables
+} *AspectBlockRef;
+
+</code></pre></div></div>
+
+<p>消息转发Block,以后实践一下</p>
+
+<p><a href="https://github.com/steipete/Aspects">Aspects github链接</a></p>
+
+<p><a href="https://wereadteam.github.io/2016/06/30/Aspects/">Bang博客参考链接</a></p>
+
+        </div>
+        <div class="article-share">
+            <!--<a href="https://twitter.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fpage%2FAspects.html&text=Aspects%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90">-->
+                <!--<i class="icon-twitter"></i>-->
+            <!--</a>-->
+            <!---->
+            <!--<a href="tg://msg_url?url=https%3A%2F%2Ft.me%2Fiv%3Furl%3Dhttp%253A%252F%252Flocalhost%253A4000%252Fpage%252FAspects.html%26rhash%3Da3e6c7b51eec6a">-->
+                <!--<i class="icon-telegram"></i>-->
+            <!--</a>-->
+            <!--<a href="https://www.buymeacoffee.com/crispgm">-->
+                <!--<i class="icon-coffee"></i>-->
+            <!--</a>-->
+            <!--<div class="article-back">-->
+                <!--<a href="/"><< Back</a>-->
+            <!--</div>-->
+        </div>
+        <div id="disqus_thread" class="article-comment"></div>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    </div>
+</div>
+</body>
+
+</html>

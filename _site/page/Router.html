@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" >
+  <title>张起灵 kylin</title>
+  <link rel="icon" href="/photo/icon.JPG" type="image/x-icon">
+
+  <meta name="description" content=""/>
+  <link rel="canonical" href="http://localhost:4000/page/Router.html">
+  <link rel="alternate" href="/page/Router.html">
+  <link rel="alternate" href="http://localhost:4000/feed.xml" type="application/rss+xml" title="RSS">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans|Fira+Mono" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+
+  
+  <link rel="stylesheet" href="/css/font.css">
+  
+  
+  <link rel="stylesheet" href="/css/nord.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="https://use.typekit.net/syr2mmc.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+<div class="wrapper blog-wrapper content-wrapper">
+    <div class="article">
+        <div class="article-menu">
+            <div class="article-home">
+                <a href="/"></a>
+            </div>
+            <div class="article-back">
+                <a href="/"><< Back</a>
+            </div>
+        </div>
+        <div class="article-head">
+            <div class="article-title">
+                iOS 中的两种路由跳转方案
+            </div>
+            <div class="article-date">
+                <time datetime="2018-02-26 00:00:00 +0800">February 26, 2018</time>
+            </div>
+        </div>
+        <div class="article-main">
+            <h3 id="组件化">组件化</h3>
+
+<p>一个APP开发到后期一般会出现如下问题</p>
+
+<ul>
+  <li>代码严重耦合,引用频繁</li>
+  <li>编译效率低下</li>
+  <li>若后期要改架构会比较难改</li>
+  <li>开发人员一多可能会出现冲突</li>
+</ul>
+
+<p>因此业界推出了组件化的方案,它的主要思路是 路由跳转 + 业务,能模块组件化,它的优点如下</p>
+
+<ul>
+  <li>减少耦合</li>
+  <li>模块间架构设计模式独立</li>
+  <li>提高编译速度，提高开发效率</li>
+</ul>
+
+<h3 id="路由跳转的方案">路由跳转的方案</h3>
+
+<h4 id="ctmediator">CTMediator</h4>
+
+<p>核心代码</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- (id)safePerformAction:(SEL)action target:(NSObject *)target params:(NSDictionary *)params
+{
+    NSMethodSignature* methodSig = [target methodSignatureForSelector:action];
+    if(methodSig == nil) {
+        return nil;
+    }
+    const char* retType = [methodSig methodReturnType];
+
+    if (strcmp(retType, @encode(void)) == 0) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSig];
+        [invocation setArgument:&amp;params atIndex:2];
+        [invocation setSelector:action];
+        [invocation setTarget:target];
+        [invocation invoke];
+        return nil;
+    }
+    ...
+    ...
+    
+    return [target performSelector:action withObject:params];
+
+}
+
+</code></pre></div></div>
+
+<p>利用runtime target-action 来触发push代码，并且将参数去model化转换成字典，思路非常的巧妙，真正从代码上解决了耦合</p>
+
+<p>使用姿势</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+UIViewController *viewController = [[CTMediator sharedInstance] CTMediator_viewControllerForDetail];
+        
+// 获得view controller之后，在这种场景下，到底push还是present，其实是要由使用者决定的，mediator只要给出view controller的实例就好了
+[self presentViewController:viewController animated:YES completion:nil];
+
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+- (UIViewController *)Action_nativeFetchDetailViewController:(NSDictionary *)params
+{
+    // 因为action是从属于ModuleA的，所以action直接可以使用ModuleA里的所有声明
+    DemoModuleADetailViewController *viewController = [[DemoModuleADetailViewController alloc] init];
+    viewController.valueLabel.text = params[@"key"];
+    return viewController;
+}
+
+</code></pre></div></div>
+
+<p>优点:</p>
+<ul>
+  <li>充分利用了Runtime target-action 的原理,做到了代码上的解耦</li>
+  <li>通过字典传值可以传递非常规参数</li>
+</ul>
+
+<p>缺点:</p>
+<ul>
+  <li>虽然参数通过去Model化船体,但是通过字典这种方式传递导致HardCode严重</li>
+  <li>仅通过Action暴露可调用接口</li>
+</ul>
+
+<h4 id="蘑菇街router">蘑菇街Router</h4>
+
+<p>参考了一个别人封装好的router <a href="https://github.com/imlifengfeng/FFRouter">FFRouter</a></p>
+
+<p>核心代码</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- (void)addRouteURL:(NSString *)routeUrl handler:(FFRouterHandler)handlerBlock {
+    NSMutableDictionary *subRoutes = [self addURLPattern:routeUrl];
+    if (handlerBlock &amp;&amp; subRoutes) {
+        NSDictionary *coreDic = @{FFRouterCoreBlockKey:[handlerBlock copy],FFRouterCoreTypeKey:@(FFRouterTypeDefault)};
+        subRoutes[FFRouterCoreKey] = coreDic;
+    }
+}
+  
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+ (void)routeURL:(NSString *)URL withParameters:(NSDictionary&lt;NSString *, id&gt; *)parameters 
+{
+    FFRouterLog(@"Route to URL:%@\nwithParameters:%@",URL,parameters);
+    NSString *rewriteURL = [FFRouterRewrite rewriteURL:URL];
+    URL = [rewriteURL stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    
+    NSMutableDictionary *routerParameters = [[self sharedInstance] achieveParametersFromURL:URL];
+    if(!routerParameters){
+        FFRouterErrorLog(@"Route unregistered URL:%@",URL);
+        [[self sharedInstance] unregisterURLBeRouterWithURL:URL];
+        return;
+    }
+    
+    [routerParameters enumerateKeysAndObjectsUsingBlock:^(id key, NSString *obj, BOOL *stop) {
+        if ([obj isKindOfClass:[NSString class]]) {
+            routerParameters[key] = [NSString stringWithFormat:@"%@",obj];
+        }
+    }];
+    
+    if (routerParameters) {
+        NSDictionary *coreDic = routerParameters[FFRouterCoreKey];
+        FFRouterHandler handler = coreDic[FFRouterCoreBlockKey];
+        FFRouterType type = [coreDic[FFRouterCoreTypeKey] integerValue];
+        if (type != FFRouterTypeDefault) {
+            [self routeTypeCheckLogWithCorrectType:type url:URL];
+            return;
+        }
+        
+        if (handler) {
+            if (parameters) {
+                [routerParameters addEntriesFromDictionary:parameters];
+            }
+            [routerParameters removeObjectForKey:FFRouterCoreKey];
+            handler(routerParameters);
+        }
+    }
+}
+</code></pre></div></div>
+
+<p>通过将URL注册进一块全局字典,用的时候再取出来,参数会跟在URL后面,跳转的时候直接根据url这个key去取到Block就可以了</p>
+
+<p>一些缺陷:</p>
+<ul>
+  <li>增加了不必要的内存</li>
+  <li>每次都要将viewcontroller注册进内存，增加viewController代码量,若是将代码写进load方法，可能会增加APP启动时间</li>
+  <li>没有从代码上真正的解耦，耦合还是存在的</li>
+  <li>如果要传递非常规参数要进行额外的处理</li>
+</ul>
+
+<p>参考连接</p>
+
+<p><a href="https://github.com/casatwy/CTMediator">CTMediator</a></p>
+
+<p><a href="https://casatwy.com/iOS-Modulization.html">iOS应用架构谈 组件化方案</a></p>
+
+<p><a href="https://limboy.me/tech/2016/03/10/mgj-components.html">蘑菇街 App 的组件化之路</a></p>
+
+<p><a href="https://limboy.me/tech/2016/03/14/mgj-components-continued.html">蘑菇街 App 的组件化之路·续</a></p>
+
+<p><a href="https://imlifengfeng.github.io/article/714/?nsukey=bqzsFxW2w4bTwiHKpYMwBhoL1mL%2FDq%2F6v4YeYDB9YN4XMuR0%2FpzGev97xFtBHGzATYx2MzxQ4bn2zEEYy%2Fd9Jo%2FJwFXui0OslclMyYou6rSLAKVr%2BWpfJmPLufvvipwBCp2cvk%2BL9GRbBJ3B4IZC2A%3D%3D">iOS 的组件化开发Router</a></p>
+
+
+        </div>
+        <div class="article-share">
+            <!--<a href="https://twitter.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fpage%2FRouter.html&text=iOS+%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E8%B7%AF%E7%94%B1%E8%B7%B3%E8%BD%AC%E6%96%B9%E6%A1%88">-->
+                <!--<i class="icon-twitter"></i>-->
+            <!--</a>-->
+            <!---->
+            <!--<a href="tg://msg_url?url=https%3A%2F%2Ft.me%2Fiv%3Furl%3Dhttp%253A%252F%252Flocalhost%253A4000%252Fpage%252FRouter.html%26rhash%3Da3e6c7b51eec6a">-->
+                <!--<i class="icon-telegram"></i>-->
+            <!--</a>-->
+            <!--<a href="https://www.buymeacoffee.com/crispgm">-->
+                <!--<i class="icon-coffee"></i>-->
+            <!--</a>-->
+            <!--<div class="article-back">-->
+                <!--<a href="/"><< Back</a>-->
+            <!--</div>-->
+        </div>
+        <div id="disqus_thread" class="article-comment"></div>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    </div>
+</div>
+</body>
+
+</html>

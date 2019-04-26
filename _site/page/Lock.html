@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" >
+  <title>张起灵 kylin</title>
+  <link rel="icon" href="/photo/icon.JPG" type="image/x-icon">
+
+  <meta name="description" content=""/>
+  <link rel="canonical" href="http://localhost:4000/page/Lock.html">
+  <link rel="alternate" href="/page/Lock.html">
+  <link rel="alternate" href="http://localhost:4000/feed.xml" type="application/rss+xml" title="RSS">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans|Fira+Mono" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+
+  
+  <link rel="stylesheet" href="/css/font.css">
+  
+  
+  <link rel="stylesheet" href="/css/nord.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="https://use.typekit.net/syr2mmc.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+<div class="wrapper blog-wrapper content-wrapper">
+    <div class="article">
+        <div class="article-menu">
+            <div class="article-home">
+                <a href="/"></a>
+            </div>
+            <div class="article-back">
+                <a href="/"><< Back</a>
+            </div>
+        </div>
+        <div class="article-head">
+            <div class="article-title">
+                iOS 里的锁
+            </div>
+            <div class="article-date">
+                <time datetime="2017-12-07 00:00:00 +0800">December 07, 2017</time>
+            </div>
+        </div>
+        <div class="article-main">
+            <h3 id="自旋锁">自旋锁</h3>
+<p>不断循环并测试锁的状态,一直占有CPU,忙等待，如果临界区的时间过长，不适合用自旋锁,如i/o操作</p>
+<h3 id="互斥锁">互斥锁</h3>
+<p>防止同一条线程对同一公共资源进行读写机制</p>
+<h3 id="递归锁">递归锁</h3>
+<p>可以被同一线程多次请求而不会引起死锁(想象一下,如果在循环中用其他锁,递归调用一次就会加锁而得不到解锁，从而导致死锁)</p>
+<h3 id="条件锁">条件锁</h3>
+<p>多个线程同时访问，检测调试时保护数据源，否则堵塞线程</p>
+
+<p>临界区指的是一个访问共用资源（例如：共用设备或是共用存储器）的程序片段，而这些共用资源又无法同时被多个线程访问的特性。</p>
+
+<hr />
+<h3 id="ios中的几种锁">iOS中的几种锁</h3>
+<ul>
+  <li>OSSpinLock</li>
+</ul>
+
+<p>OSSpinLock 不再安全，主要原因发生在低优先级线程拿到锁时，高优先级线程进入忙等(busy-wait)状态，消耗大量 CPU 时间，从而导致低优先级线程拿不到 CPU 时间，也就无法完成任务并释放锁。这种问题被称为优先级反转。</p>
+
+<p>时间片轮转算法(Round Robin，简称 RR)。每个线程会被分配一段时间片(quantum)，通常在 10-100 毫秒左右。当线程用完属于自己的时间片以后，就会被操作系统挂起，放入等待队列中，直到下一次被分配时间片</p>
+
+<ul>
+  <li>dispatch_semaphore_t</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dispatch_semaphore_create
+dispatch_semaphore_signal
+dispatch_semaphore_wait
+当信号量等于0是阻塞,大于0是通过
+
+</code></pre></div></div>
+
+<ul>
+  <li>pthread_mutex</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pthread_mutexattr_t attr;  
+pthread_mutexattr_init(&amp;attr);  
+pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_NORMAL);  // 定义锁的属性
+
+pthread_mutex_t mutex;  
+pthread_mutex_init(&amp;mutex, &amp;attr) // 创建锁
+
+pthread_mutex_lock(&amp;mutex); // 申请锁  
+    // 临界区
+pthread_mutex_unlock(&amp;mutex); // 释放锁
+</code></pre></div></div>
+
+<ul>
+  <li>NSLock</li>
+  <li>NSCondition</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NSCondition *cLock = [NSCondition new];
+//线程1
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [cLock lock];
+    NSLog(@"线程1加锁成功");
+    [cLock wait];
+    NSLog(@"线程1");
+    [cLock unlock];
+});
+
+//线程2
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [cLock lock];
+    NSLog(@"线程2加锁成功");
+    [cLock wait];
+    NSLog(@"线程2");
+    [cLock unlock];
+});
+
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    sleep(2);
+    NSLog(@"唤醒一个等待的线程");
+    [cLock signal];
+});
+
+输出顺序： “唤醒一个等待的线程” - 1 - 2
+
+</code></pre></div></div>
+
+<ul>
+  <li>NSRecursiveLock</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NSRecursiveLock *rLock = [NSRecursiveLock new];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    static void (^RecursiveBlock)(int);
+    RecursiveBlock = ^(int value) {
+        [rLock lock];
+        if (value &gt; 0) {
+            NSLog(@"线程%d", value);
+            RecursiveBlock(value - 1);
+        }
+        [rLock unlock];
+    };
+    RecursiveBlock(4);
+});
+
+</code></pre></div></div>
+
+<ul>
+  <li>NSConditionLock</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- NSConditionLock
+- NSConditionLock *cLock = [[NSConditionLock alloc] initWithCondition:0];
+
+//线程1
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    if([cLock tryLockWhenCondition:0]){
+        NSLog(@"线程1");
+       [cLock unlockWithCondition:1];
+    }else{
+         NSLog(@"失败");
+    }
+});
+
+//线程2
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [cLock lockWhenCondition:3];
+    NSLog(@"线程2");
+    [cLock unlockWithCondition:2];
+});
+
+//线程3
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    [cLock lockWhenCondition:1];
+    NSLog(@"线程3");
+    [cLock unlockWithCondition:3];
+});
+
+输出顺序：1-3-2
+</code></pre></div></div>
+
+<ul>
+  <li>@synchronized</li>
+</ul>
+
+        </div>
+        <div class="article-share">
+            <!--<a href="https://twitter.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fpage%2FLock.html&text=iOS+%E9%87%8C%E7%9A%84%E9%94%81">-->
+                <!--<i class="icon-twitter"></i>-->
+            <!--</a>-->
+            <!---->
+            <!--<a href="tg://msg_url?url=https%3A%2F%2Ft.me%2Fiv%3Furl%3Dhttp%253A%252F%252Flocalhost%253A4000%252Fpage%252FLock.html%26rhash%3Da3e6c7b51eec6a">-->
+                <!--<i class="icon-telegram"></i>-->
+            <!--</a>-->
+            <!--<a href="https://www.buymeacoffee.com/crispgm">-->
+                <!--<i class="icon-coffee"></i>-->
+            <!--</a>-->
+            <!--<div class="article-back">-->
+                <!--<a href="/"><< Back</a>-->
+            <!--</div>-->
+        </div>
+        <div id="disqus_thread" class="article-comment"></div>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    </div>
+</div>
+</body>
+
+</html>

@@ -5,65 +5,465 @@
     <description></description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 23 Jan 2019 14:15:04 +0800</pubDate>
-    <lastBuildDate>Wed, 23 Jan 2019 14:15:04 +0800</lastBuildDate>
+    <pubDate>Fri, 26 Apr 2019 15:02:09 +0800</pubDate>
+    <lastBuildDate>Fri, 26 Apr 2019 15:02:09 +0800</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
     
       
     
       
+    
+      
+    
+      
+    
+      
       <item>
-        <title>2018 年终总结</title>
-        <description>&lt;p&gt;18年年初的时候对新的一年期待满满,但是一年下来大部分时间都过得很压抑,这一年发生了很多事情,以此记录&lt;/p&gt;
+        <title>Log</title>
+        <description>
+&lt;hr /&gt;
+&lt;p&gt;layout: post
+title:  “关于埋点的一些整理”
+date:   2018-04-02
+tag: iOS
+permalink: /page/Log.html
+type: legacy&lt;/p&gt;
 
-&lt;h2 id=&quot;2018年发生的事情&quot;&gt;2018年发生的事情&lt;/h2&gt;
-&lt;h3 id=&quot;生活&quot;&gt;生活&lt;/h3&gt;
+&lt;hr /&gt;
 
-&lt;p&gt;4月份清明的时候老姐她们回她婆家过清明,怕老爸老妈待在家里无聊，所以准备带他们去附近转转。本来是打算去苏州的,做了两天的攻略，结果动车票和酒店都订不到,就gg了,最后决定带他们去上海玩个两天。带个两老出去玩其实挺累的,但是也算是我第一次吧带这两老出去溜达,挺开心的。之前都是老姐带他们出去玩的,老爸老妈其实挺喜欢出去玩的,多年前老爸一直说想去台湾。
-   &lt;img src=&quot;/photo/2018_shanghai1.JPG&quot; alt=&quot;photo&quot; /&gt;
-   &lt;img src=&quot;http://localhost:4000/photo/2018_shanghai3.JPG&quot; alt=&quot;photo&quot; /&gt;
-   &lt;img src=&quot;http://localhost:4000/photo/2018_shanghai4.JPG&quot; alt=&quot;photo&quot; /&gt;&lt;/p&gt;
+&lt;h3 id=&quot;直接埋点&quot;&gt;直接埋点&lt;/h3&gt;
 
-&lt;p&gt;5月份的时候老爸生了场大病,真是把我吓坏了。记得那天赶过去,第一眼看到老爸,二三天的功夫已经瘦了10来斤了,小腿上根本没肉,很痛苦。第一时间查出来只知道病的很严重,但是不知道具体什么病。那个时候我好怕,他平时抽烟，好怕是那个病,好怕突然失去,内心很恐惧。出院后老爸终于把烟戒了,挺替老爸开心的,烟这东西真心不能碰。那几天真的意识到挣再多钱又有什么意思呢,一家人健康平安团团圆圆真是再幸运不过的事情了。&lt;/p&gt;
+&lt;p&gt;缺点:埋点代码直接和业务代码混淆在一起,增加开发者的负担&lt;/p&gt;
 
-&lt;p&gt;7月份终于把驾照考出来了,呵呵，这东西是真的烦。从17年7月份去报名整整烦了我一年。吃了不少苦头,科目2去考了我三次,把我心态都考蹦了。拿到驾照那一刻真是鸡冻,真是不容易。
-   &lt;img src=&quot;http://localhost:4000/photo/2018_license.JPG&quot; alt=&quot;photo&quot; /&gt;&lt;/p&gt;
+&lt;h3 id=&quot;简易的aop埋点&quot;&gt;简易的AOP埋点&lt;/h3&gt;
 
-&lt;p&gt;8月份的时候掏光了家里的积蓄在老家买了房子。老姐也出了不少钱。心理挺不是滋味。只是耐不住家里老妈念念叨叨。我知道老爸老妈心里是替我盘算。但是我觉得我的人生不应该这样,不喜欢亏欠太多。咋说呢,没钱有没钱的愁。自从开始还房贷,发现自己每个月省点钱下来真是难啊。不过看看身边的朋友,生活压力都比我大。有时候感觉自己挺没用的。心智非常不成熟。&lt;/p&gt;
+&lt;p&gt;原理:基于Aspects框架(方法交换)&lt;/p&gt;
 
-&lt;p&gt;说一下感情吧,应该把它简单的记录下来,当初因为做了些过分的事情分手,认识十年了吧,喜欢四年,分手两年,一直沉迷在失恋的消极的情绪中。8月份的时候去找她撞见有人送她回家,就再也不敢去打扰了。前段时间知道她脱单了,情理之外意料之中吧,感觉自己也没有过多的伤心,反而感觉突然没啥负担了,就是做梦老是梦到她。现在一切都结束了,或许这是个不错的结局。
-   &lt;img src=&quot;http://localhost:4000/photo/2015_9.JPG&quot; alt=&quot;photo&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;优点:埋点代码与业务逻辑解耦了&lt;/p&gt;
 
-&lt;p&gt;八月份的看了一本书,路遥《平凡的世界》,很现实,感觉放在现在的社会也能映射到某些事情。还看了半本《禅者的初心》,是本好书,读几章就可以让人的内心宁静下来,一直都觉得佛学的力量很伟大,有时候也非常的向往。&lt;/p&gt;
+&lt;p&gt;缺点:&lt;/p&gt;
 
-&lt;h3 id=&quot;技术&quot;&gt;技术&lt;/h3&gt;
-
-&lt;p&gt;18年年初的时候本来是打算换工作的。面试了几个,感觉都没怎么面好。现在看来准备确实不充分,而且简历实在写的太屎了。后来就想着学好驾照再找,后来每次面试都能感到不足,反正就无限准备,反正就拖到2018年结束了。但是感觉自己在技术上还是有进步的。感觉自己学东西,对事情的认知都非常的慢热。&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;三月份的时候一整个月在练算法,算法这个东西感觉得长写,不然一段时间就忘了&lt;/li&gt;
-  &lt;li&gt;八月份中的两周整体看了一下设计模式&lt;/li&gt;
-  &lt;li&gt;十一月十二月玩了大概20多天的reactnative,个人对其的看法感觉跨端是趋势,但是reactnative给我的感觉是整体框架非常的不成熟,不太看好现阶段的rn,期待Facebook的改进&lt;/li&gt;
-  &lt;li&gt;其余时间应该都是在看iOS方面的东西了。从runtime到架构,这一年下来感觉对iOS整体的认知更进了一步吧。&lt;/li&gt;
-  &lt;li&gt;花了不少时间去写swift,但是非常不满意,写的跟oc一样,感觉没有写出那种swift的精髓,但是我觉得如果iOS开发,确实swift比oc效率高很多&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;2019&quot;&gt;2019&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果要新增埋点代码,则要跟着App一起重新发布 或者 热修复&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;主要是Aspects的性能消耗&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;找一份自己满意的工作,安定下来&lt;/li&gt;
-  &lt;li&gt;感觉iOS整体就业环境不好,还是要加强深度,增加自己的核心竞争力。&lt;/li&gt;
-  &lt;li&gt;增加自己的知识储备度吧,也不知道iOS还能坚持几年。对自己的学习知识能力认知其实挺保守的,感觉很难与优秀聪明的人竞争吧&lt;/li&gt;
-  &lt;li&gt;感觉这几年把自己搞自闭了,希望能够多认识几个新朋友,拓展下自己的圈子。&lt;/li&gt;
-  &lt;li&gt;其实一直想在自己的兴趣周边做点小投资理财的,去年在steam上投了3k块钱,现在看来是打水漂了,都用来买游戏了🤣。&lt;/li&gt;
-  &lt;li&gt;总觉得应该拿抖音做点什么,淘宝之后是微信,感觉抖音就是微信之后下一个平台。同时也很期待5G的到来吧。不知道科技圈会有什么翻天覆地的变化&lt;/li&gt;
-  &lt;li&gt;希望自己能养成做一个自律的人,多锻炼多看书。&lt;/li&gt;
+  &lt;li&gt;在hook过程之中调用了其他多个函数的处理&lt;/li&gt;
+  &lt;li&gt;invoke block 的性能消耗&lt;/li&gt;
+  &lt;li&gt;作者也在注释中写道，不适合对每秒钟超过1000次的方法增加切面代码。&lt;/li&gt;
+  &lt;li&gt;用其他方式对 Aspect hook 过的方法进行hook时,如直接替换为新的IMP,新hook得到的原始实现是_objc_msgForward,之前的aspect_hook会失效,新的hook也将执行异常。&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;h3 id=&quot;可视化埋点&quot;&gt;可视化埋点&lt;/h3&gt;
+
+&lt;p&gt;通过可视化工具配置采集节点，在前端自动解析配置并在合适的时机上报埋点数据，从而实现所谓的“无痕埋点”,应该是现在主流的埋点方式&lt;/p&gt;
+
+&lt;p&gt;难点:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;事件标识(UI标识): 通过swizzle 各类的生命周期，UIControl的点击,手势,代理等进行方法交换，然后根据一定的规则拼接成唯一标识(比如target+action)，配置表从后台下载&lt;/li&gt;
+  &lt;li&gt;数据关联问题:
+ 同一控件不同业务 —- 可以根据tag来判断&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;缺点：代码还是写死的，如修改埋点还是需要重新发布。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Swizzle UITableViewDelegate&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; +(void)load
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&amp;amp;onceToken, ^{
+        
+        SEL originalAppearSelector = @selector(setDelegate:);
+        SEL swizzingAppearSelector = @selector(user_setDelegate:);
+        [MethodSwizzingTool swizzingForClass:[self class] originalSel:originalAppearSelector swizzingSel:swizzingAppearSelector];
+    });
+}
+
+
+
+-(void)user_setDelegate:(id&amp;lt;UITableViewDelegate&amp;gt;)delegate
+{
+    [self user_setDelegate:delegate];
+    
+    SEL sel = @selector(tableView:didSelectRowAtIndexPath:);
+    
+    SEL sel_ =  NSSelectorFromString([NSString stringWithFormat:@&quot;%@/%@/%ld&quot;, NSStringFromClass([delegate class]), NSStringFromClass([self class]),self.tag]);
+    
+    
+    //因为 tableView:didSelectRowAtIndexPath:方法是optional的，所以没有实现的时候直接return
+    if (![self isContainSel:sel inClass:[delegate class]]) {
+        
+        return;
+    }
+    
+    
+    BOOL addsuccess = class_addMethod([delegate class],
+                                      sel_,
+                                      method_getImplementation(class_getInstanceMethod([self class], @selector(user_tableView:didSelectRowAtIndexPath:))),
+                                      nil);
+    
+    //如果添加成功了就直接交换实现， 如果没有添加成功，说明之前已经添加过并交换过实现了
+    if (addsuccess) {
+        Method selMethod = class_getInstanceMethod([delegate class], sel);
+        Method sel_Method = class_getInstanceMethod([delegate class], sel_);
+        method_exchangeImplementations(selMethod, sel_Method);
+    }
+}
+
+
+//判断页面是否实现了某个sel
+- (BOOL)isContainSel:(SEL)sel inClass:(Class)class {
+    unsigned int count;
+    
+    Method *methodList = class_copyMethodList(class,&amp;amp;count);
+    for (int i = 0; i &amp;lt; count; i++) {
+        Method method = methodList[i];
+        NSString *tempMethodString = [NSString stringWithUTF8String:sel_getName(method_getName(method))];
+        if ([tempMethodString isEqualToString:NSStringFromSelector(sel)]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+
+// 由于我们交换了方法， 所以在tableview的 didselected 被调用的时候， 实质调用的是以下方法：
+-(void)user_tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+   ....
+}
+ 
+ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;无痕动态埋点完全后台控制下发埋点&quot;&gt;无痕动态埋点(完全后台控制下发埋点)&lt;/h3&gt;
+
+&lt;p&gt;基本思路:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;如何实现事件标识&lt;/p&gt;
+
+    &lt;p&gt;取每个控件自身的ID、类名以及位于所属父组件的Index等特征信息，并逐级向上遍历找到根节点。根节点一般是手动标记的，如果没有标记则默认是视图层次树的顶层节点。最后，将遍历产生的路径上所有节点的特征信息组合在一起，就是这个事件的标识&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;业务数据关联&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;后台进行关联处理&lt;/li&gt;
+      &lt;li&gt;获取到跳转路径,遍历当前控制器的所有属性,拿到需要的业务数据&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;参考链接&quot;&gt;参考链接&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;iOS统计打点那些事: &lt;a href=&quot;https://limboy.me/tech/2015/09/09/ios-analytics.html&quot;&gt;https://limboy.me/tech/2015/09/09/ios-analytics.html&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;美团点评前端无痕埋点实践: &lt;a href=&quot;https://tech.meituan.com/2017/03/02/mt-mobile-analytics-practice.html&quot;&gt;https://tech.meituan.com/2017/03/02/mt-mobile-analytics-practice.html&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;iOS 无痕埋点方案探究:&lt;a href=&quot;https://blog.csdn.net/SandyLoo/article/details/81202105&quot;&gt;https://blog.csdn.net/SandyLoo/article/details/81202105&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;iOS无埋点数据SDK实践之路:&lt;a href=&quot;https://www.jianshu.com/p/69ce01e15042&quot;&gt;https://www.jianshu.com/p/69ce01e15042&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
 </description>
-        <pubDate>Tue, 01 Jan 2019 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/page/report.html</link>
-        <guid isPermaLink="true">http://localhost:4000/page/report.html</guid>
+        <pubDate>Mon, 02 Apr 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2018/04/02/Log.html</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/04/02/Log.html</guid>
+        
+        
+      </item>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+      <item>
+        <title>Gcd</title>
+        <description>
+&lt;hr /&gt;
+&lt;p&gt;layout: post
+title:  “iOS多线程GCD的一些用法”
+date:   2017-12-06
+tag: iOS
+permalink: /page/GCD.html
+type: legacy&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;gcd&quot;&gt;GCD&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;异步同步串行并行&lt;/li&gt;
+  &lt;li&gt;栅栏 dispatch_barrier_async&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/**
+ * 栅栏方法 dispatch_barrier_async
+ */
+- (void)barrier {
+    dispatch_queue_t queue = dispatch_queue_create(&quot;net.bujige.testQueue&quot;, DISPATCH_QUEUE_CONCURRENT);
+    
+    dispatch_async(queue, ^{
+        // 追加任务1
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;1---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+    });
+    dispatch_async(queue, ^{
+        // 追加任务2
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;2---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+    });
+    
+    dispatch_barrier_async(queue, ^{
+        // 追加任务 barrier
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;barrier---%@&quot;,[NSThread currentThread]);// 打印当前线程
+        }
+    });
+    
+    dispatch_async(queue, ^{
+        // 追加任务3
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;3---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+    });
+    dispatch_async(queue, ^{
+        // 追加任务4
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;4---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+    });
+}
+ 
+输出结果:
+2017-12-05 21:38:59.099019+0800 gcdTest[9016:267228] 1---&amp;lt;NSThread: 0x600003be8000&amp;gt;{number = 4, name = (null)}
+2017-12-05 21:38:59.099029+0800 gcdTest[9016:267230] 2---&amp;lt;NSThread: 0x600003bded00&amp;gt;{number = 3, name = (null)}
+2017-12-05 21:39:01.103694+0800 gcdTest[9016:267228] 1---&amp;lt;NSThread: 0x600003be8000&amp;gt;{number = 4, name = (null)}
+2017-12-05 21:39:01.103694+0800 gcdTest[9016:267230] 2---&amp;lt;NSThread: 0x600003bded00&amp;gt;{number = 3, name = (null)}
+2017-12-05 21:39:03.104291+0800 gcdTest[9016:267228] barrier---&amp;lt;NSThread: 0x600003be8000&amp;gt;{number = 4, name = (null)}
+2017-12-05 21:39:05.109198+0800 gcdTest[9016:267228] barrier---&amp;lt;NSThread: 0x600003be8000&amp;gt;{number = 4, name = (null)}
+2017-12-05 21:39:07.113646+0800 gcdTest[9016:267228] 3---&amp;lt;NSThread: 0x600003be8000&amp;gt;{number = 4, name = (null)}
+2017-12-05 21:39:07.113675+0800 gcdTest[9016:267229] 4---&amp;lt;NSThread: 0x600003be5cc0&amp;gt;{number = 5, name = (null)}
+2017-12-05 21:39:09.117927+0800 gcdTest[9016:267229] 4---&amp;lt;NSThread: 0x600003be5cc0&amp;gt;{number = 5, name = (null)}
+2017-12-05 21:39:09.117971+0800 gcdTest[9016:267228] 3---&amp;lt;NSThread: 0x600003be8000&amp;gt;{number = 4, name = (null)}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;延迟dispatch_after&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 2.0秒后异步追加任务代码到主队列，并开始执行
+        NSLog(@&quot;after---%@&quot;,[NSThread currentThread]);  // 打印当前线程
+    });
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;一次性代码dispatch_once&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; + (instance)shareInstace
+ {
+     static instace = nil;
+     static dispatch_once_t onceToken;
+     dispathc_once(&amp;amp;onceToken,^{
+         instace = [Instace alloc] init]; 
+     });
+ }
+ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;dispatch_group_notify  监听 group 中任务的完成状态，当所有的任务都执行完成后，追加任务到 group 中，并执行任务&lt;/li&gt;
+  &lt;li&gt;dispatch_group_wait 暂停当前线程（阻塞当前线程），等待指定的 group 中的任务执行完成后，才会往下继续执行&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/**
+ * 队列组 dispatch_group_wait
+ */
+- (void)groupWait {
+    NSLog(@&quot;currentThread---%@&quot;,[NSThread currentThread]);  // 打印当前线程
+    NSLog(@&quot;group---begin&quot;);
+    
+    dispatch_group_t group =  dispatch_group_create();
+    
+    dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // 追加任务1
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;1---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+    });
+    
+    dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // 追加任务2
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;2---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+    });
+    
+    // 等待上面的任务全部完成后，会往下继续执行（会阻塞当前线程）
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    
+    NSLog(@&quot;group---end&quot;);
+    
+    输出结果:  
+       2017-12-05 21:52:23.824217+0800 gcdTest[9068:269045] currentThread---&amp;lt;NSThread: 0x6000037b2900&amp;gt;{number = 1, name = main}
+		2017-12-05 21:52:23.824479+0800 gcdTest[9068:269045] group---begin
+		2017-12-05 21:52:25.826494+0800 gcdTest[9068:269111] 1---&amp;lt;NSThread: 0x6000037e3b80&amp;gt;{number = 3, name = (null)}
+		2017-12-05 21:52:25.826495+0800 gcdTest[9068:269110] 2---&amp;lt;NSThread: 0x6000037e7a40&amp;gt;{number = 4, name = (null)}
+		2017-12-05 21:52:27.831316+0800 gcdTest[9068:269111] 1---&amp;lt;NSThread: 0x6000037e3b80&amp;gt;{number = 3, name = (null)}
+		2017-12-05 21:52:27.831316+0800 gcdTest[9068:269110] 2---&amp;lt;NSThread: 0x6000037e7a40&amp;gt;{number = 4, name = (null)}
+		2017-12-05 21:52:27.831552+0800 gcdTest[9068:269045] group---end
+     
+}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;dispatch_group_enter、dispatch_group_leave
+    &lt;ol&gt;
+      &lt;li&gt;dispatch_group_enter 标志着一个任务追加到 group，执行一次，相当于 group 中未执行完毕任务数+1&lt;/li&gt;
+      &lt;li&gt;dispatch_group_leave 标志着一个任务离开了 group，执行一次，相当于 group 中未执行完毕任务数-1。&lt;/li&gt;
+      &lt;li&gt;当 group 中未执行完毕任务数为0的时候，才会使dispatch_group_wait解除阻塞，以及执行追加到dispatch_group_notify中的任务。&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/**
+ * 队列组 dispatch_group_enter、dispatch_group_leave
+ */
+- (void)groupEnterAndLeave
+{
+    NSLog(@&quot;currentThread---%@&quot;,[NSThread currentThread]);  // 打印当前线程
+    NSLog(@&quot;group---begin&quot;);
+    
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_group_enter(group);
+    dispatch_async(queue, ^{
+        // 追加任务1
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;1---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+        dispatch_group_leave(group);
+    });
+    
+    dispatch_group_enter(group);
+    dispatch_async(queue, ^{
+        // 追加任务2
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;2---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+        dispatch_group_leave(group);
+    });
+    
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        // 等前面的异步操作都执行完毕后，回到主线程.
+        for (int i = 0; i &amp;lt; 2; ++i) {
+            [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+            NSLog(@&quot;3---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        }
+        NSLog(@&quot;group---end&quot;);
+    });
+    
+//    // 等待上面的任务全部完成后，会往下继续执行（会阻塞当前线程）
+//    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+//
+//    NSLog(@&quot;group---end&quot;);
+}
+ 输出结果：
+ 
+    2017-12-05 22:05:16.438948+0800 gcdTest[9109:270519] currentThread---&amp;lt;NSThread: 0x6000010da880&amp;gt;{number = 1, name = main}
+    2017-12-05 22:05:16.439108+0800 gcdTest[9109:270519] group---begin
+    2017-12-05 22:05:18.442686+0800 gcdTest[9109:270587] 1---&amp;lt;NSThread: 0x600001087100&amp;gt;{number = 3, name = (null)}
+    2017-12-05 22:05:18.442686+0800 gcdTest[9109:270589] 2---&amp;lt;NSThread: 0x600001092600&amp;gt;{number = 4, name = (null)}
+    2017-12-05 22:05:20.445788+0800 gcdTest[9109:270587] 1---&amp;lt;NSThread: 0x600001087100&amp;gt;{number = 3, name = (null)}
+    2017-12-05 22:05:20.445788+0800 gcdTest[9109:270589] 2---&amp;lt;NSThread: 0x600001092600&amp;gt;{number = 4, name = (null)}
+    2017-12-05 22:05:22.446351+0800 gcdTest[9109:270519] 3---&amp;lt;NSThread: 0x6000010da880&amp;gt;{number = 1, name = main}
+    2017-12-05 22:05:24.446863+0800 gcdTest[9109:270519] 3---&amp;lt;NSThread: 0x6000010da880&amp;gt;{number = 1, name = main}
+    2017-12-05 22:05:24.447094+0800 gcdTest[9109:270519] group---end
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;信号量dispatch_semaphore
+    &lt;ol&gt;
+      &lt;li&gt;dispatch_semaphore_create：创建一个Semaphore并初始化信号的总量&lt;/li&gt;
+      &lt;li&gt;dispatch_semaphore_signal：发送一个信号，让信号总量加1&lt;/li&gt;
+      &lt;li&gt;dispatch_semaphore_wait：可以使总信号量减1，当信号总量为0时就会一直等待（阻塞所在线程），否则就可以正常执行&lt;/li&gt;
+      &lt;li&gt;首页多个网络请求用法:跟dispatch_group 配合使用，在网络请求完成之后dispatch_semaphore_signal,然后在下面dispathc_semaphore_wait 卡着&lt;a href=&quot;https://zhuanlan.zhihu.com/p/30651730&quot;&gt;知乎链接&lt;/a&gt;&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+/**
+ * semaphore 线程同步
+ */
+- (void)semaphoreSync {
+    
+    NSLog(@&quot;currentThread---%@&quot;,[NSThread currentThread]);  // 打印当前线程
+    NSLog(@&quot;semaphore---begin&quot;);
+    
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    __block int number = 0;
+    dispatch_async(queue, ^{
+        // 追加任务1
+        [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+        NSLog(@&quot;1---%@&quot;,[NSThread currentThread]);      // 打印当前线程
+        
+        number = 100;
+        
+        dispatch_semaphore_signal(semaphore);
+    });
+    
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    NSLog(@&quot;semaphore---end,number = %zd&quot;,number);
+}
+
+输出结果：
+	2017-12-05 22:17:44.933105+0800 gcdTest[9150:271931] currentThread---&amp;lt;NSThread: 0x600003b36f40&amp;gt;{number = 1, name = main}
+    2017-12-05 22:17:44.933279+0800 gcdTest[9150:271931] semaphore---begin
+    2017-12-05 22:17:46.937724+0800 gcdTest[9150:271992] 1---&amp;lt;NSThread: 0x600003b54300&amp;gt;{number = 3, name = (null)}
+    2017-12-05 22:17:46.937966+0800 gcdTest[9150:271931] semaphore---end,number = 100
+    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Wed, 06 Dec 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2017/12/06/GCD.html</link>
+        <guid isPermaLink="true">http://localhost:4000/2017/12/06/GCD.html</guid>
         
         
       </item>

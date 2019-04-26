@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" >
+  <title>张起灵 kylin</title>
+  <link rel="icon" href="/photo/icon.JPG" type="image/x-icon">
+
+  <meta name="description" content=""/>
+  <link rel="canonical" href="http://localhost:4000/page/Leaks.html">
+  <link rel="alternate" href="/page/Leaks.html">
+  <link rel="alternate" href="http://localhost:4000/feed.xml" type="application/rss+xml" title="RSS">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans|Fira+Mono" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+
+  
+  <link rel="stylesheet" href="/css/font.css">
+  
+  
+  <link rel="stylesheet" href="/css/nord.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="https://use.typekit.net/syr2mmc.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+<div class="wrapper blog-wrapper content-wrapper">
+    <div class="article">
+        <div class="article-menu">
+            <div class="article-home">
+                <a href="/"></a>
+            </div>
+            <div class="article-back">
+                <a href="/"><< Back</a>
+            </div>
+        </div>
+        <div class="article-head">
+            <div class="article-title">
+                关于内存泄漏检测和NSTimer
+            </div>
+            <div class="article-date">
+                <time datetime="2019-02-14 00:00:00 +0800">February 14, 2019</time>
+            </div>
+        </div>
+        <div class="article-main">
+            <h2 id="内存泄漏检测">内存泄漏检测</h2>
+<p><a href="https://github.com/kylinuranus">github参考代码</a></p>
+
+<p>基本思路:通过hook viewController的 viewVillappear 和 viewDidDisappear ,当viewController释放后，向一个nil发送消息看是否能接收到</p>
+
+<p>关键代码</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+- (void)sk_viewWillAppear:(BOOL)animated
+{
+    [self sk_viewWillAppear:animated];
+    objc_setAssociatedObject(self, &amp;flag, @(NO), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)sk_viewDidDisappear:(BOOL)animated
+{
+    [self sk_viewDidDisappear:animated];
+    if ([objc_getAssociatedObject(self, &amp;flag) boolValue]) {
+        [self sk_delloc];
+    }
+}
+
+- (void)sk_delloc
+{
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __weak typeof(self) strongSelf = weakSelf;
+        if (strongSelf) {
+            NSLog(@"%@ 没有释放",strongSelf);
+        }
+    });
+}
+
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//还有多个pop和dismiss要做吃力 此处略过
+- (UIViewController *)sk_popViewControllerAnimated:(BOOL)animated
+{
+    extern const NSString *flag;
+    UIViewController *popVc = [self sk_popViewControllerAnimated:animated];
+    objc_setAssociatedObject(popVc, &amp;flag, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return popVc;
+}
+
+</code></pre></div></div>
+<h2 id="nstimer定时器的内存泄漏方案">NSTimer定时器的内存泄漏方案</h2>
+
+<p>要点:在delloc和viewWillDisappear 中不能释放。前者走不到,后者业务需求可能会遇到问题</p>
+
+<h3 id="方案1">方案1</h3>
+
+<p>初始化一个临时对象作为timer的强引用,runTime动态增加一个方法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NSObject *target = [[NSObject alloc] init];
+class_addMethod([target class], @selector(fire), (IMP)targetfire, "v@:");
+    
+_timer = [NSTimer scheduledTimerWithTimeInterval:1 target:target selector:@selector(fire) userInfo:nil repeats:YES];
+[_timer fire];
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void targetfire(id self,SEL _cmd) {
+    NSLog(@"---new fire");
+}
+
+</code></pre></div></div>
+
+<h3 id="方案2">方案2</h3>
+
+<p>新建一个代理类,继承于NSProxy,property一个weak的target,做消息转发</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> SKTimerProxy *proxy = [SKTimerProxy alloc];
+ proxy.target = self;
+  _timer = [NSTimer scheduledTimerWithTimeInterval:1 target:proxy selector:@selector(fire) userInfo:nil repeats:YES];
+ [_timer fire];
+
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+//@property (nonatomic, weak) id target;
+
+- (nullable NSMethodSignature *)methodSignatureForSelector:(SEL)sel
+{
+    return [self.target methodSignatureForSelector:sel];
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation
+{
+    [invocation setTarget:self.target];
+    [invocation invoke];
+}
+
+</code></pre></div></div>
+
+<h2 id="关于nsproxy">关于NSProxy</h2>
+
+<p>代理，与nsobject同类，做消息转发，主要作用</p>
+<ul>
+  <li>防循环引用，如上nstimer</li>
+  <li>多继承</li>
+</ul>
+
+<p><a href="https://blog.csdn.net/shubinniu/article/details/80895450">网上参考链接</a></p>
+
+
+        </div>
+        <div class="article-share">
+            <!--<a href="https://twitter.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fpage%2FLeaks.html&text=%E5%85%B3%E4%BA%8E%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E6%A3%80%E6%B5%8B%E5%92%8CNSTimer">-->
+                <!--<i class="icon-twitter"></i>-->
+            <!--</a>-->
+            <!---->
+            <!--<a href="tg://msg_url?url=https%3A%2F%2Ft.me%2Fiv%3Furl%3Dhttp%253A%252F%252Flocalhost%253A4000%252Fpage%252FLeaks.html%26rhash%3Da3e6c7b51eec6a">-->
+                <!--<i class="icon-telegram"></i>-->
+            <!--</a>-->
+            <!--<a href="https://www.buymeacoffee.com/crispgm">-->
+                <!--<i class="icon-coffee"></i>-->
+            <!--</a>-->
+            <!--<div class="article-back">-->
+                <!--<a href="/"><< Back</a>-->
+            <!--</div>-->
+        </div>
+        <div id="disqus_thread" class="article-comment"></div>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    </div>
+</div>
+</body>
+
+</html>

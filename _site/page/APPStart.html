@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" >
+  <title>张起灵 kylin</title>
+  <link rel="icon" href="/photo/icon.JPG" type="image/x-icon">
+
+  <meta name="description" content=""/>
+  <link rel="canonical" href="http://localhost:4000/page/APPStart.html">
+  <link rel="alternate" href="/page/APPStart.html">
+  <link rel="alternate" href="http://localhost:4000/feed.xml" type="application/rss+xml" title="RSS">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans|Fira+Mono" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+
+  
+  <link rel="stylesheet" href="/css/font.css">
+  
+  
+  <link rel="stylesheet" href="/css/nord.css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="https://use.typekit.net/syr2mmc.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+<div class="wrapper blog-wrapper content-wrapper">
+    <div class="article">
+        <div class="article-menu">
+            <div class="article-home">
+                <a href="/"></a>
+            </div>
+            <div class="article-back">
+                <a href="/"><< Back</a>
+            </div>
+        </div>
+        <div class="article-head">
+            <div class="article-title">
+                APP启动优化整理
+            </div>
+            <div class="article-date">
+                <time datetime="2018-01-20 00:00:00 +0800">January 20, 2018</time>
+            </div>
+        </div>
+        <div class="article-main">
+            <h3 id="冷启动和热启动">冷启动和热启动</h3>
+
+<p>如果你刚刚启动过App，这时候App的启动所需要的数据仍然在缓存中，再次启动的时候称为热启动。如果设备刚刚重启，然后启动App，这时候称为冷启动</p>
+
+<h3 id="启动设置">启动设置</h3>
+
+<p>在Xcode中，可以通过设置环境变量来查看App的启动时间，DYLD_PRINT_STATISTICS和DYLD_PRINT_STATISTICS_DETAILS。</p>
+
+<p><img src="/photo/2018_app_start_setting1.png" alt="photo" /></p>
+
+<p>设置完成后可以在xcode 控制台看到如下信息</p>
+
+<p><img src="/photo/2018_app_start_setting2.png" alt="photo" /></p>
+
+<h3 id="动态库和静态库的区别">动态库和静态库的区别</h3>
+
+<p>动态库形式：.dylib和.framework 链接时，静态库会被完整地复制到可执行文件中，被多次使用就有多份冗余拷贝</p>
+
+<p>静态库形式：.a和.framework 链接时不复制，程序运行时由系统动态加载到内存，供程序调用，系统只加载一次，多个程序共用，节省内存</p>
+
+<h3 id="mach-o文件结构的简单了解">mach-o文件结构的简单了解</h3>
+
+<p>Mach-O是一种文件的格式, 是iOS/Mac OS上存储程序以及库的标准格式。</p>
+
+<ul>
+  <li>Header 头部，包含可以执行的CPU架构，比如x86,arm64</li>
+  <li>Load commands 加载命令，包含文件的组织架构和在虚拟内存中的布局方式</li>
+  <li>
+    <p>Data，数据，包含load commands中需要的各个段(segment)的数据，每一个Segment都得大小是Page的整数倍。</p>
+
+    <p><img src="/photo/2018_app_start_setting3.png" alt="photo" /></p>
+  </li>
+</ul>
+
+<h3 id="app启动基本流程">APP启动基本流程</h3>
+
+<p>APP启动分为main函数之前和main函数之后,main函数之前被称为pre-main time</p>
+
+<p>APP 在 pre-main 干的事儿:</p>
+
+<ul>
+  <li>dylib loading:加载动态库 读取mach-o文件的header 和 load commands 去寻找动态库并加载</li>
+  <li>rebase/binding: 修正指针和符号绑定(根据代码去程序中寻找地址实现的过程)</li>
+  <li>ObjC setup：注册一些类的信息,初始化category到类方法列表中</li>
+  <li>initializer time: 初始化 +load方法/C／C++静态初始化对象和标记为__attribute__(constructor)的方法</li>
+</ul>
+
+<p>pre-main以后:</p>
+
+<ul>
+  <li>didFinishLaunchingWithOptions</li>
+  <li>APP首页 viewDidLoad</li>
+</ul>
+
+<h3 id="优化大致思路">优化大致思路</h3>
+
+<ul>
+  <li>因为之前项目中用到了Swift 和 OC 的混编,所以cocoapods 用的都是动态库, 后删除了Swift代码,忘记改回了静态库(pods文件中是否加了use_framworks!)
+项目改回静态库以后,冷启动时间大概提高了3倍,这个效果非常的明显</li>
+  <li>减少一些无用的类和方法,减少一些无用的category</li>
+  <li>尽量可以将+load方法的代码写到initialize, +Load方法是每次类加载的时候调用，initialize则是程序中第一次用到该类的时候调用且只调用一次</li>
+  <li>减少一些didFinishLaunchingWithOptions和首页viewdidload的代码。将一些能延后初始化加载的三方库和控件尽量延后加载,或者懒加载。</li>
+</ul>
+
+<p>参考链接</p>
+
+<p><a href="https://blog.csdn.net/Hello_Hwc/article/details/78317863">深入理解iOS App的启动过程</a></p>
+
+<p><a href="https://www.jianshu.com/p/3d0ae289dee0">cocoapods中的动态库和静态库</a></p>
+
+<p><a href="https://blog.cnbluebox.com/blog/2017/10/12/dyld2/">Dyld之二: 动态链接过程</a></p>
+
+        </div>
+        <div class="article-share">
+            <!--<a href="https://twitter.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fpage%2FAPPStart.html&text=APP%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96%E6%95%B4%E7%90%86">-->
+                <!--<i class="icon-twitter"></i>-->
+            <!--</a>-->
+            <!---->
+            <!--<a href="tg://msg_url?url=https%3A%2F%2Ft.me%2Fiv%3Furl%3Dhttp%253A%252F%252Flocalhost%253A4000%252Fpage%252FAPPStart.html%26rhash%3Da3e6c7b51eec6a">-->
+                <!--<i class="icon-telegram"></i>-->
+            <!--</a>-->
+            <!--<a href="https://www.buymeacoffee.com/crispgm">-->
+                <!--<i class="icon-coffee"></i>-->
+            <!--</a>-->
+            <!--<div class="article-back">-->
+                <!--<a href="/"><< Back</a>-->
+            <!--</div>-->
+        </div>
+        <div id="disqus_thread" class="article-comment"></div>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    </div>
+</div>
+</body>
+
+</html>
