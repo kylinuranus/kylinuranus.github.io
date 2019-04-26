@@ -1,11 +1,11 @@
-
 ---
 layout: post
-title:  "关于埋点的一些整理"
-date:   2018-04-02
+title:  "埋点方案的整理"
+date:  2018-04-02
 tag: iOS
-permalink: /page/Log.html
+permalink: /page/Statistics.html
 type: legacy
+comments: true
 
 ---
 
